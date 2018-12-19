@@ -1,0 +1,224 @@
+%% If you have any problems using this template, please contact the author: %%
+%% timhosgood@gmail.com %%
+
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{charter}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[ampersand]{easylist}
+\usepackage{algorithm,algpseudocode}
+
+\DeclareMathOperator*{\E}{\rm E}
+\DeclareMathOperator*{\argmax}{\rm argmax}
+\DeclareMathOperator*{\argmin}{\rm argmin}
+
+\newcommand{\mI}{{\mathrm I}}
+\newcommand{\mP}{{\mathrm P}}
+\newcommand{\mR}{{\mathrm R}}
+\newcommand{\mT}{{\mathrm T}}
+\newcommand{\mX}{{\mathrm X}}
+\newcommand{\upshapeI}{\textrm{\upshape I}}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\ListProperties(Hide=100, Hang=true, Progressive=3ex, Style*=-- , Style2*=$\bullet$ ,Style3*=$\circ$ ,Style4*=\tiny$\blacksquare$ )
+
+%% Title slide formatting %%
+
+%\pgfdeclareimage[width=\paperwidth]{titlebackground}{images/title-slide-background.png}
+\setbeamerfont{subtitle}{size=\tiny}
+
+%% General slide formatting %%
+
+\definecolor{oxfordblue}{RGB}{4,30,66}
+
+%% Information (author, title, etc.) %%
+
+\title[Short version of title]{Multi-Armed Bandit Problem} % short title for footer
+%\author%
+%{%
+   % \sc{E. Noether}\\
+    %\textit{Guest Lecturer}
+%}
+%\institute%
+%{%
+   % \textit{Mathematical Institute}\\
+   % \textit{University of Oxford}
+%}
+\date[]{}
+%\date[PoM2015]{Presentation on mathematics, November 2015} % short date for footer
+
+
+
+%% Content of slides %%
+
+\begin{document}
+    \begin{frame}[plain]
+        \titlepage
+    \end{frame}
+    %
+   \begin{frame}
+        \frametitle{Key Problem}
+
+	Exploration vs exploitation dilemma
+        \begin{itemize}
+        	\item inspect new arms with possibly better rewards.
+	\item use existing information to select best arm.
+	\end{itemize}
+    \end{frame}
+
+   \begin{frame}[fragile]
+        \frametitle{Stochastic Bandit}
+
+	\begin{easylist}[itemize]
+        		&  K arms: for each arm $i \in \{1,...,K\}$.
+		&&  reward distribution $P_i$ .
+		&& reward mean $\mu_i$.
+		&& gap to best: $\Delta_i = \mu^{*} - \mu_i$, where $\mu^{*}=\max_{i \in[1,K]}  \mu_i$.
+	\end{easylist}
+
+	\bigskip
+	
+	\begin{easylist}[itemize]
+	 & Bandit Setting: For $t=1$ to T do
+	 && players selects action $\mI_t \in \{1,\cdots,K\} (randomized)$
+	 && player receives reward $\mX_t \sim \mP_{\mI_t}$
+	\end{easylist}
+	
+    \end{frame}
+
+   \begin{frame}
+     \frametitle{Objectives}
+   
+   	\begin{enumerate}
+	\item Expected Regret
+	$$\E[\mR_{T}] = \E \big[ \max_{i \in [1,K]} \sum_{t=1}^{T} \mX_{i,t} - \sum_{t=1}^{T} \mX_{\mI_t,t} \big]$$
+	\item Pseudo-regret
+	\begin{align*}
+	 \overline{\mR_{T}} 	&=    \max_{i \in [1,K]} \E \big[ \sum_{t=1}^{T} \mX_{i,t} - \sum_{t=1}^{T} \mX_{\mI_t,t} \big] \\
+	 				&=  	\max_{i \in [1,K]} \E \big[ \sum_{t=1}^{T} \mX_{i,t} - \E \big[ \sum_{t=1}^{T} \mX_{\mI_t,t} \big] \\
+					&=    \max_{i \in [1,K]}  \sum_{t=1}^{T} \E \big[ \mX_{i,t} \big] - \E \big[ \sum_{t=1}^{T} \mX_{\mI_t,t} \big] \\
+	 			       	&=	 \mu^{*} T - \E \big[ \sum_{t=1}^{T} \mX_{\mI_t,t} \big]
+	\end{align*}
+	\item By Jensen's inequality, $ \overline{\mR_{T}}  \le \E[\mR_{T}] $
+   	\end{enumerate}
+   \end{frame}
+
+   \begin{frame}
+     \frametitle{Pseudo Regret}
+
+   	\begin{enumerate}
+		\item Expression in terms of $\Delta_i$s:
+		\[
+		 \overline{\mR_{T}}  = \sum_{t=1}^{K}  \E [ T_i(T) ] \Delta_i
+		\]
+		$T_i(T)$: number of times arm $i$ was pulled up to time $t$, $T_i(t) = \sum_{s=1}^{t}  1_{\mI_s = i}$ 
+   	\end{enumerate}
+   \end{frame}
+
+   \begin{frame}
+     \frametitle{Pseudo Regret}
+     \begin{proof}
+	\begin{align*}
+	 \overline{\mR_{T}} 	&=  	\mu^{*} T - \E \big[ \sum_{t=1}^{T} \mX_{\mI_t,t} \big]  =  	\E \big[ \sum_{t=1}^{T}  (\mu^{*}  -  \mX_{\mI_t,t}) \big]\\
+					&= 	\E \big[ \sum_{t=1}^{T} \sum_{i=1}^{K}  (\mu^{*}  -  \mX_{\mI_t,t})  1_{\mI_t = i} \big]	= 	\sum_{t=1}^{T} \sum_{i=1}^{K}  \E[(\mu^{*}  -  \mX_{\mI_t,t})]  \E[1_{\mI_t = i}] \\
+					&= 	 \sum_{i=1}^{K}  (\mu^{*}  - \mu_i) \E[ \sum_{t=1}^{T} 1_{\mI_t = i} ] 	=  \sum_{i=1}^{K} \E[ T_i(T)] \Delta_i
+	\end{align*}
+     \end{proof}
+   \end{frame}
+
+   \begin{frame}
+     \frametitle{$\epsilon$-Greedy Strategy}
+     
+  	\begin{algorithm}[H] 
+		\begin{algorithmic}[1]
+			\Require{$\epsilon_t \in (0,1]$} 
+		    \For{$t \gets 1$ to $T$}                    
+	        		\State {$\mI_t = \argmax_{j=1,\cdots,K} \hat{\mu_j}$}
+			\State{Draw u uniformly from [0,1]}
+			\If{$u > \epsilon_t$}
+			 \State{Play arm $\mI_t$}
+			\Else
+			 \State{Play a random arm}
+			\EndIf
+		    \EndFor
+	\end{algorithmic}
+	\end{algorithm}
+	
+   \end{frame}
+
+   \begin{frame}   
+     \frametitle{Thompson Sampling}
+     
+     For the Bernoulli bandit, $\mX_t$ follows a Beta distribution, as $\mX_t$ is essentially the success probability $\theta$ in Bernoulli distribution. 
+     The value of $Beta(\alpha,\beta)$ is within the interval [0, 1]; $\alpha$ and $\beta$ correspond to the counts when we succeeded or failed to get a reward respectively.
+     \begin{align*}
+		\alpha_i &= \alpha_i + \mX_{\mI_t,t} 1_{\mI_t = i} \\
+		\beta_i &= \beta_i + (1-\mX_{\mI_t,t}) 1_{\mI_t = i} 
+     \end{align*} 
+   \end{frame}
+
+   \begin{frame}[fragile]   
+     \frametitle{UCB Strategy}
+	 Intuition: we are drawn to the bandits that are paying out large rewards and those that we know little about. 
+	 We want to upper bound the number of times we will pull arm $i$, so we will attempt to compute $\E [ T_i(T) ] $.
+	 
+	\begin{easylist}[itemize]
+		& For each $t \in [1,T]$, compute an upper confidence bound estimate on the mean of each arm at some fixed confidence level.
+		& select arm with largest UCB.
+	\end{easylist}
+
+   \end{frame}
+ 
+   \begin{frame}
+        \frametitle{UCB Strategy}
+
+      	\begin{itemize}
+		\item With the rewards distributions in [0,1]. from Hoeffding's inequality we have: 
+		\[
+			\log \E[ e^{t (X-\E[X]) } ] \le \Psi(t)
+		\]
+		\item Then
+			\begin{align*}
+				Pr[X - \E[X] > \epsilon] 	&= Pr[ e^{t (X-\E[X]) } > e^{t \epsilon} ] \\
+									&\le \inf_{t>0}  e^{-t \epsilon} \E[e^{t (X-\E[X]) }] \\
+									&\le \inf_{t>0} e^{-t \epsilon} e^{\Psi(t)} \\
+									&= e^{-\sup_{t>0} (t \epsilon-\Psi(t))} \\
+									&= e^{-\Psi^{*}(\epsilon)}
+			\end{align*}
+   	\end{itemize}
+   \end{frame}
+
+   \begin{frame}
+        \frametitle{UCB Strategy}
+
+      	\begin{enumerate}
+		\item Average reward estimate for arm $i$ by time $t$:
+				$$\widehat{\mu_{i,t}} = \frac{1}{\mT_i (t) } \sum_{s=1}^t X_{i,s} 1_{\mI_s=i} $$
+		\item Concentration inequality:
+				$$Pr[ \mu_i - \frac{1}{t} \sum_{s=1}^t X_{i,s} > \epsilon ] \le e^{-\Psi^{*}(\epsilon)} $$
+		\item Thus, for any $\delta > 0$, with probability at least $1-\delta$:
+				$$ \mu_i <  \frac{1}{t} \sum_{s=1}^t X_{i,s} + \Psi^{*^{-1}}  \big( \frac{1}{t}  \log{\frac{1}{\delta} } \big)$$
+   	\end{enumerate}
+
+   \end{frame}
+
+   \begin{frame}
+        \frametitle{($\alpha$,$\Psi$)-UCB Strategy}
+
+      	\begin{itemize}
+		
+		\item Parameter $\alpha > 0$; ($\alpha$,$\Psi$)-UCB Strategy: at time t, select:
+		 $$\mI_t \in \argmax \big[ \hat{\mu_{i,t-1}} + \Psi^{*^{-1}}   \big( \frac{\alpha \log{t}} {\mT_i (t-1)}  \big) \big]$$ 
+		 
+		 \item For $\Psi(\lambda) = \frac{\lambda^2}{8}$, then $\Psi^{*^{-1}} = 2 \epsilon^2$ and substituting for $\alpha=4$, we 		obtain that at  time t, plays the arm (UCB1):
+		 $$\mI_t \in \argmax \big[ \hat{\mu_{i,t-1}} + \sqrt{\frac{2 \log{t}} {\mT_i (t-1)}} \big]$$ 		 
+	\end{itemize}
+   \end{frame}
+    
+\end{document}
