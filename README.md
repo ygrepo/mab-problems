@@ -1,2 +1,2 @@
-# mab_problems
+# Mab Problems
 Multi-Armed Bandit Toy Problems
